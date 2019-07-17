@@ -4,10 +4,11 @@ import json
 import re
 import csv
 
-RE_YOMI = re.compile('■(?P<name>.*)（(?P<yomi>.*)）') 
-RE_NAME = re.compile('■(?P<name>.*)') 
+RE_YOMI = re.compile('■(?P<name>.*)（(?P<yomi>.*)）') # 読み方を抽出パータン
+RE_NAME = re.compile('■(?P<name>.*)') # 名前を抽出パータン
 
 def clean_intro(i):
+    '''紹介を整理'''
     start_flag = '■'
     end_flag = '関連項目'
     start_idx = i.find(start_flag)
@@ -26,6 +27,9 @@ def get_yomi(i):
     m = RE_YOMI.match(i)
     return m.group('yomi') if m else ''
 
+def text_to_html(i):
+    return i.replace('\n\n', '\n').replace('\n', '</br>')
+
 def main():
     result = []
     with open('celebrity.json') as f:
@@ -43,20 +47,12 @@ def main():
     with open('celebrity_clean.json', 'w') as f:
         json.dump(result, f)
 
-    with open('celebrity_yomi.csv', 'w') as f:
+    with open('celebrity.csv', 'w') as f:
         csv_writer = csv.writer(f)
         for c in result:
             name = c['name']
             yomi = c['yomi']
-            row = name, yomi, '<img src="%s_%s.jpg" />' % (name, yomi)
-            csv_writer.writerow(row)
-
-    with open('celebrity_yomi_intro.csv', 'w') as f:
-        csv_writer = csv.writer(f)
-        for c in result:
-            name = c['name']
-            yomi = c['yomi']
-            intro = c['intro']
+            intro = text_to_html(c['intro'])
             row = name, yomi, '<img src="%s_%s.jpg" />' % (name, yomi), intro
             csv_writer.writerow(row)
 
